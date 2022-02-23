@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="SharpGrabber" Version="2.1.0" />
+    <PackageReference Include="SharpGrabber.Converter" Version="1.0.0" />
     <PackageReference Include="SharpGrabber.YouTube" Version="1.3.0" />
   </ItemGroup>
 
