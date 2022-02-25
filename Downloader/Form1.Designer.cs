@@ -33,11 +33,17 @@
             this.prgDownload = new System.Windows.Forms.ProgressBar();
             this.lblProgress = new System.Windows.Forms.Label();
             this.lblUrl = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.lblSpeed = new System.Windows.Forms.Label();
+            this.lblDownloading = new System.Windows.Forms.Label();
+            this.lblSize = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnDownload
             // 
-            this.btnDownload.Location = new System.Drawing.Point(713, 100);
+            this.btnDownload.Location = new System.Drawing.Point(713, 241);
             this.btnDownload.Name = "btnDownload";
             this.btnDownload.Size = new System.Drawing.Size(75, 23);
             this.btnDownload.TabIndex = 0;
@@ -54,7 +60,7 @@
             // 
             // prgDownload
             // 
-            this.prgDownload.Location = new System.Drawing.Point(12, 71);
+            this.prgDownload.Location = new System.Drawing.Point(12, 212);
             this.prgDownload.Name = "prgDownload";
             this.prgDownload.Size = new System.Drawing.Size(776, 23);
             this.prgDownload.TabIndex = 2;
@@ -62,7 +68,7 @@
             // lblProgress
             // 
             this.lblProgress.AutoSize = true;
-            this.lblProgress.Location = new System.Drawing.Point(12, 53);
+            this.lblProgress.Location = new System.Drawing.Point(12, 194);
             this.lblProgress.Name = "lblProgress";
             this.lblProgress.Size = new System.Drawing.Size(61, 15);
             this.lblProgress.TabIndex = 3;
@@ -77,11 +83,74 @@
             this.lblUrl.TabIndex = 4;
             this.lblUrl.Text = "Paste YouTube URL here...";
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(17, 61);
+            this.label1.Margin = new System.Windows.Forms.Padding(4);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(81, 15);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "Downloading:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(17, 84);
+            this.label2.Margin = new System.Windows.Forms.Padding(4);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(30, 15);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "Size:";
+            // 
+            // lblSpeed
+            // 
+            this.lblSpeed.AutoSize = true;
+            this.lblSpeed.Location = new System.Drawing.Point(114, 107);
+            this.lblSpeed.Margin = new System.Windows.Forms.Padding(4);
+            this.lblSpeed.Name = "lblSpeed";
+            this.lblSpeed.Size = new System.Drawing.Size(0, 15);
+            this.lblSpeed.TabIndex = 7;
+            // 
+            // lblDownloading
+            // 
+            this.lblDownloading.AutoSize = true;
+            this.lblDownloading.Location = new System.Drawing.Point(114, 61);
+            this.lblDownloading.Margin = new System.Windows.Forms.Padding(4);
+            this.lblDownloading.Name = "lblDownloading";
+            this.lblDownloading.Size = new System.Drawing.Size(0, 15);
+            this.lblDownloading.TabIndex = 8;
+            // 
+            // lblSize
+            // 
+            this.lblSize.AutoSize = true;
+            this.lblSize.Location = new System.Drawing.Point(114, 84);
+            this.lblSize.Margin = new System.Windows.Forms.Padding(4);
+            this.lblSize.Name = "lblSize";
+            this.lblSize.Size = new System.Drawing.Size(0, 15);
+            this.lblSize.TabIndex = 9;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(17, 107);
+            this.label6.Margin = new System.Windows.Forms.Padding(4);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(42, 15);
+            this.label6.TabIndex = 10;
+            this.label6.Text = "Speed:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 133);
+            this.ClientSize = new System.Drawing.Size(800, 275);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.lblSize);
+            this.Controls.Add(this.lblDownloading);
+            this.Controls.Add(this.lblSpeed);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lblUrl);
             this.Controls.Add(this.lblProgress);
             this.Controls.Add(this.prgDownload);
@@ -101,5 +170,11 @@
         private ProgressBar prgDownload;
         private Label lblProgress;
         private Label lblUrl;
+        private Label label1;
+        private Label label2;
+        private Label lblSpeed;
+        private Label lblDownloading;
+        private Label lblSize;
+        private Label label6;
     }
 }

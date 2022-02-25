@@ -2,8 +2,6 @@ using DotNetTools.SharpGrabber;
 using DotNetTools.SharpGrabber.Converter;
 using DotNetTools.SharpGrabber.Grabbed;
 
-using System;
-
 namespace Downloader
 {
     public partial class Form1 : Form
@@ -22,6 +20,8 @@ namespace Downloader
                 .UseDefaultServices()
                 .AddYouTube()
                 .Build();
+            btnDownload.Enabled = false;
+            txtLink.Enabled = false;
             Task.Run(async () =>
             {
                 try
@@ -33,18 +33,22 @@ namespace Downloader
                     var sortedMediaFiles = mediaFiles.OrderByResolutionDescending().ThenByBitRateDescending().ToArray();
                     var bestVideo = mediaFiles.GetHighestQualityVideo();
                     var bestAudio = mediaFiles.GetHighestQualityAudio();
-
-
                     var audioStream = ChooseMonoMedia(result, MediaChannels.Audio);
                     var videoStream = ChooseMonoMedia(result, MediaChannels.Video);
                     var audioPath = await DownloadMedia(audioStream, result);
                     var videoPath = await DownloadMedia(videoStream, result);
                     GenerateOutputFile(audioPath, videoPath, videoStream);
-                }catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
-            });
+            }).ContinueWith(task =>
+            {
+                btnDownload.Enabled = true;
+                txtLink.Enabled = true;
+                prgDownload.Value = 0;
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void GenerateOutputFile(string audioPath, string videoPath, GrabbedMedia videoStream)
@@ -70,9 +74,8 @@ namespace Downloader
 
             using var response = await Client.GetAsync(media.ResourceUri, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
-            var total = response.Content.Headers.ContentLength ?? -1L;
+            var totalBytes = response.Content.Headers.ContentLength ?? -1L;
             using var downloadStream = await response.Content.ReadAsStreamAsync();
-            //using var resourceStream = await grabResult.WrapStreamAsync(downloadStream);
 
             var downloadRate = 1048576;
             var path = Path.GetTempFileName();
@@ -85,7 +88,9 @@ namespace Downloader
             CancellationToken token = new();
 
             lblProgress.Invoke(new Action(() => {
-                lblProgress.Text = "Total: " + total;
+                lblProgress.Text = "Total: " + totalBytes;
+                lblSize.Text = (totalBytes / 1000000.0).ToString("0.##") + " MB";
+                lblDownloading.Text = media.Channels + " - " + grabResult.Title;
             }));
 
             do
@@ -97,21 +102,17 @@ namespace Downloader
                 buffer.ToList().CopyTo(0, data, 0, read);
 
                 await fileStream.WriteAsync(buffer.AsMemory(0, read));
-
-                // Update the percentage of file downloaded
                 totalRead += read;
 
                 lblProgress.Invoke(new Action(() =>
                 {
-                    var downloadPercentage = totalRead * 1d / (total * 1d) * 100;
-                    lblProgress.Text = "Downloading " + media.Channels + " " + grabResult.Title + ": " + downloadPercentage.ToString("0.##") + "%" + " " + (totalRead / 1000000.0).ToString("0.##") + "MB";
+                    var downloadPercentage = totalRead * 1d / (totalBytes * 1d) * 100;
+                    lblProgress.Text = "Descargado: " + downloadPercentage.ToString("0.##") + "%";
+                    lblSpeed.Text = (totalRead / 1000000.0).ToString("0.##") + " MB";
                     prgDownload.Value = Convert.ToInt32(downloadPercentage);
                 }));
             }
             while (read > 0);
-
-
-            //using var fileStream = new FileStream(path, FileMode.Create);
             
             return path;
         }
@@ -126,31 +127,6 @@ namespace Downloader
                 return null;
 
             return channel == MediaChannels.Audio ? resources.GetHighestQualityAudio() : resources.GetHighestQualityVideo();
-
-            //for (var i = 0; i < resources.Count; i++)
-            //{
-            //    var resource = resources[i];
-            //    Console.WriteLine($"{i}. {resource.Title ?? resource.FormatTitle ?? resource.Resolution}");
-            //}
-
-            //while (true)
-            //{
-            //    Console.Write($"Choose the {channel} file: ");
-            //    var choiceStr = Console.ReadLine();
-            //    if (!int.TryParse(choiceStr, out var choice))
-            //    {
-            //        Console.WriteLine("Number expected.");
-            //        continue;
-            //    }
-
-            //    if (choice < 0 || choice >= resources.Count)
-            //    {
-            //        Console.WriteLine("Invalid number.");
-            //        continue;
-            //    }
-
-            //    return resources[choice];
-            //}
         }
     }
 }
