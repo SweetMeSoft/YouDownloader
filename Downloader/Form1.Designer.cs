@@ -35,10 +35,12 @@
             this.lblUrl = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.lblSpeed = new System.Windows.Forms.Label();
+            this.lblDownloaded = new System.Windows.Forms.Label();
             this.lblDownloading = new System.Windows.Forms.Label();
             this.lblSize = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.lblSpeed = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnDownload
@@ -103,14 +105,14 @@
             this.label2.TabIndex = 6;
             this.label2.Text = "Size:";
             // 
-            // lblSpeed
+            // lblDownloaded
             // 
-            this.lblSpeed.AutoSize = true;
-            this.lblSpeed.Location = new System.Drawing.Point(114, 107);
-            this.lblSpeed.Margin = new System.Windows.Forms.Padding(4);
-            this.lblSpeed.Name = "lblSpeed";
-            this.lblSpeed.Size = new System.Drawing.Size(0, 15);
-            this.lblSpeed.TabIndex = 7;
+            this.lblDownloaded.AutoSize = true;
+            this.lblDownloaded.Location = new System.Drawing.Point(114, 107);
+            this.lblDownloaded.Margin = new System.Windows.Forms.Padding(4);
+            this.lblDownloaded.Name = "lblDownloaded";
+            this.lblDownloaded.Size = new System.Drawing.Size(0, 15);
+            this.lblDownloaded.TabIndex = 7;
             // 
             // lblDownloading
             // 
@@ -136,19 +138,40 @@
             this.label6.Location = new System.Drawing.Point(17, 107);
             this.label6.Margin = new System.Windows.Forms.Padding(4);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(42, 15);
+            this.label6.Size = new System.Drawing.Size(77, 15);
             this.label6.TabIndex = 10;
-            this.label6.Text = "Speed:";
+            this.label6.Text = "Downloaded:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(17, 130);
+            this.label3.Margin = new System.Windows.Forms.Padding(4);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(42, 15);
+            this.label3.TabIndex = 12;
+            this.label3.Text = "Speed:";
+            // 
+            // lblSpeed
+            // 
+            this.lblSpeed.AutoSize = true;
+            this.lblSpeed.Location = new System.Drawing.Point(114, 130);
+            this.lblSpeed.Margin = new System.Windows.Forms.Padding(4);
+            this.lblSpeed.Name = "lblSpeed";
+            this.lblSpeed.Size = new System.Drawing.Size(0, 15);
+            this.lblSpeed.TabIndex = 11;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 275);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.lblSpeed);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.lblSize);
             this.Controls.Add(this.lblDownloading);
-            this.Controls.Add(this.lblSpeed);
+            this.Controls.Add(this.lblDownloaded);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblUrl);
@@ -176,5 +199,7 @@
         private Label lblDownloading;
         private Label lblSize;
         private Label label6;
+        private Label lblDownloaded;
+        private Label label3;
     }
 }

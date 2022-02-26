@@ -2,6 +2,10 @@ using DotNetTools.SharpGrabber;
 using DotNetTools.SharpGrabber.Converter;
 using DotNetTools.SharpGrabber.Grabbed;
 
+using Microsoft.AspNetCore.Mvc;
+
+using System.Diagnostics;
+
 namespace Downloader
 {
     public partial class Form1 : Form
@@ -19,6 +23,7 @@ namespace Downloader
             var grabber = GrabberBuilder.New()
                 .UseDefaultServices()
                 .AddYouTube()
+                .AddVimeo()
                 .Build();
             btnDownload.Enabled = false;
             txtLink.Enabled = false;
@@ -65,6 +70,8 @@ namespace Downloader
             merger.Build();
         }
 
+        [RequestSizeLimit(10L * 1024L * 1024L * 1024L)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024L * 1024L * 1024L)]
         private async Task<string> DownloadMedia(GrabbedMedia media, IGrabResult grabResult)
         {
             lblProgress.Invoke(new Action(() => {
@@ -76,7 +83,9 @@ namespace Downloader
             response.EnsureSuccessStatusCode();
             var totalBytes = response.Content.Headers.ContentLength ?? -1L;
             using var downloadStream = await response.Content.ReadAsStreamAsync();
+            using var streamReader = new StreamReader(downloadStream);
 
+            var stopwatch = new Stopwatch();
             var downloadRate = 1048576;
             var path = Path.GetTempFileName();
             TempFiles.Add(path);
@@ -86,6 +95,7 @@ namespace Downloader
             var totalRead = 0L;
             var buffer = new byte[downloadRate];
             CancellationToken token = new();
+            token.ThrowIfCancellationRequested();
 
             lblProgress.Invoke(new Action(() => {
                 lblProgress.Text = "Total: " + totalBytes;
@@ -95,22 +105,24 @@ namespace Downloader
 
             do
             {
-                token.ThrowIfCancellationRequested();
-
-                read = await downloadStream.ReadAsync(buffer, token);
+                stopwatch.Start();
+                read = downloadStream.Read(buffer, 0, downloadRate);
                 var data = new byte[read];
                 buffer.ToList().CopyTo(0, data, 0, read);
 
                 await fileStream.WriteAsync(buffer.AsMemory(0, read));
                 totalRead += read;
+                stopwatch.Stop();
 
                 lblProgress.Invoke(new Action(() =>
                 {
                     var downloadPercentage = totalRead * 1d / (totalBytes * 1d) * 100;
                     lblProgress.Text = "Descargado: " + downloadPercentage.ToString("0.##") + "%";
-                    lblSpeed.Text = (totalRead / 1000000.0).ToString("0.##") + " MB";
+                    lblDownloaded.Text = (totalRead / 1000000.0).ToString("0.##") + " MB";
+                    lblSpeed.Text = (((read * 10000000.0) / stopwatch.ElapsedTicks) / 1024.0).ToString("0.##") + " KB/sec";
                     prgDownload.Value = Convert.ToInt32(downloadPercentage);
                 }));
+                stopwatch.Reset();
             }
             while (read > 0);
             
