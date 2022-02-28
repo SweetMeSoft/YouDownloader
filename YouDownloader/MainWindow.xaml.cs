@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -54,6 +55,7 @@ namespace YouDownloader
                         Title = videoInfo.Title,
                         Description = videoInfo.Description,
                         Size = GetSize(audioStream, videoStream),
+                        Date = videoInfo.UploadDate.ToString("yyyy-MM-dd"),
                         UrlThumbnail = videoInfo.Thumbnails[0].Url.Substring(0, videoInfo.Thumbnails[0].Url.IndexOf("?")),
                         Video = videoInfo
                     });
@@ -151,12 +153,14 @@ namespace YouDownloader
         private string GetFilePath(string outputPath, Video videoInfo, IStreamInfo videoStream, int position)
         {
             string? path;
+            var title = Regex.Replace(videoInfo.Title, @"[^0-9a-zA-Z\._\- ]", "");
             if (position > 0)
             {
-                path = outputPath + "/" + videoInfo.Title + " (" + position + ")." + videoStream.Container.Name;
+                path = outputPath + "/" + title + "[" + videoInfo.UploadDate.ToString("yyyy-MM-dd") + "] (" + position + ")." + videoStream.Container.Name;
             }
-            else {
-                path = outputPath + "/" + videoInfo.Title + "." + videoStream.Container.Name;
+            else
+            {
+                path = outputPath + "/" + title + "[" + videoInfo.UploadDate.ToString("yyyy-MM-dd") + "]." + videoStream.Container.Name;
             }
 
             if (File.Exists(path))

@@ -18,6 +18,8 @@ namespace YouDownloader.Models
 
         public string UrlThumbnail { get; set; }
 
+        public string Date { get; set; }
+
         public Video Video { get; set; }
     }
 }

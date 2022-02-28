@@ -49,6 +49,7 @@
                             <StackPanel>
                                 <TextBlock Text="{Binding Title}" />
                                 <TextBlock Text="{Binding Size}" />
+                                <TextBlock Text="{Binding Date}" />
                             </StackPanel>
                         </StackPanel>
                     </DataTemplate>
