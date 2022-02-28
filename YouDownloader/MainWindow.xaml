@@ -1,0 +1,39 @@
+﻿<Window x:Class="YouDownloader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="YouDownloader" Height="450" Width="800">
+    <Grid>
+        <StackPanel Margin="32">
+            <StackPanel Orientation="Vertical">
+                <Label>Link</Label>
+                <TextBox x:Name="txtLink" ></TextBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Downloading:</Label>
+                <Label Name="lblDownloading"></Label>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Size:</Label>
+                <Label Name="lblSize"></Label>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Downloaded:</Label>
+                <Label Name="lblDownloaded"></Label>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Speed:</Label>
+                <Label Name="lblSpeed"></Label>
+            </StackPanel>
+            <StackPanel VerticalAlignment="Bottom" Margin="0,16,0,0">
+                <Label Name="lblProgress">Waiting...</Label>
+                <ProgressBar x:Name="prgDownload" Height="16" Margin="0,0,0,16"></ProgressBar>
+                <Button x:Name="btnDownload" Click="btnDownload_Click" HorizontalAlignment="Right" Padding="16,4">
+                    Download
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
