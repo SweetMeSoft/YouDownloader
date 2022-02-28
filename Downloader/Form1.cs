@@ -2,11 +2,11 @@ using DotNetTools.SharpGrabber;
 using DotNetTools.SharpGrabber.Converter;
 using DotNetTools.SharpGrabber.Grabbed;
 
-using Microsoft.AspNetCore.Mvc;
-
 using System.Diagnostics;
 
-using VideoLibrary;
+using YoutubeExplode;
+using YoutubeExplode.Videos;
+using YoutubeExplode.Videos.Streams;
 
 namespace Downloader
 {
@@ -23,43 +23,64 @@ namespace Downloader
         private void btnDownload_Click(object sender, EventArgs e)
         {
             //UseSharpGrabber();
-            //UseVideoLibrary();
             UseYoutubeExplode();
         }
 
         private void UseYoutubeExplode()
         {
-            Task.Run(() =>
+            Task.Run(async () =>
             {
+                try
+                {
+                    var youtube = new YoutubeClient();
 
+                    // You can specify both video ID or URL
+                    var videoInfo = await youtube.Videos.GetAsync(txtLink.Text);
+                    var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
+                    var videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
+                    var audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+                    var audioPath = await Download(youtube, videoInfo, audioStream);
+                    var videoPath = await Download(youtube, videoInfo, videoStream);
+                    GenerateOutputFile(videoInfo, audioPath, videoPath, videoStream);
+                    File.Delete(audioPath);
+                    File.Delete(videoPath);
+                }
+                catch (Exception ex)
+                {
+                    var a = ex;
+                }
+
+                //var audioPath = DownloadMedia(streamAudio.Url, videoInfo.Title, "Audio");
             });
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        private void UseVideoLibrary()
+        private async Task<string> Download(YoutubeClient youtube, Video videoInfo, IStreamInfo stream)
         {
-            Task.Run(() =>
+            lblDownloading.Invoke(() =>
             {
-                var youTube = YouTube.Default;
-                var video = youTube.GetAllVideos(txtLink.Text);
+                lblDownloading.Text = stream.Container.Name + " - " + videoInfo.Title;
+                lblSize.Text = stream.Size.ToString();
             });
+            var path = Path.GetTempFileName();
+            using var progress = new InlineProgress(stream.Size, prgDownload, lblProgress, lblDownloaded);
+            await youtube.Videos.Streams.DownloadAsync(stream, path, progress);
+            return path;
         }
 
+        private void GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
+        {
+            FFmpeg.AutoGen.ffmpeg.RootPath = @"C:\Users\erick\source\repos\Downloader\Downloader\ffmpeg";
+            var outputPath = "D:\\Documents\\" + videoInfo.Title + "." + videoStream.Container.Name;
+            if (string.IsNullOrWhiteSpace(outputPath))
+                throw new Exception("No output path is specified.");
+            var merger = new MediaMerger(outputPath);
+            merger.AddStreamSource(audioPath, MediaStreamType.Audio);
+            merger.AddStreamSource(videoPath, MediaStreamType.Video);
+            merger.OutputMimeType = "video/" + videoStream.Container.Name;
+            merger.OutputShortName = videoStream.Container.Name;
+            merger.Build();
+        }
 
 
 
@@ -87,7 +108,6 @@ namespace Downloader
             var grabber = GrabberBuilder.New()
                 .UseDefaultServices()
                 .AddYouTube()
-                .AddVimeo()
                 .Build();
             btnDownload.Enabled = false;
             txtLink.Enabled = false;
@@ -104,9 +124,9 @@ namespace Downloader
                     var bestAudio = mediaFiles.GetHighestQualityAudio();
                     var audioStream = ChooseMonoMedia(result, MediaChannels.Audio);
                     var videoStream = ChooseMonoMedia(result, MediaChannels.Video);
-                    var audioPath = await DownloadMedia(audioStream, result);
-                    var videoPath = await DownloadMedia(videoStream, result);
-                    GenerateOutputFile(audioPath, videoPath, videoStream);
+                    //var audioPath = await DownloadMedia(audioStream, result);
+                   // var videoPath = await DownloadMedia(videoStream, result);
+                    //GenerateOutputFile(audioPath, videoPath, videoStream);
                 }
                 catch (Exception ex)
                 {
@@ -134,9 +154,7 @@ namespace Downloader
             merger.Build();
         }
 
-        [RequestSizeLimit(10L * 1024L * 1024L * 1024L)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024L * 1024L * 1024L)]
-        private async Task<string> DownloadMedia(GrabbedMedia media, IGrabResult grabResult)
+        private async Task<string> DownloadMedia(string url, string title, string type)
         {
             var stopwatch = new Stopwatch();
             var downloadRate = 1048576;
@@ -146,7 +164,7 @@ namespace Downloader
             }));
 
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" Testing video
-            using var response = await Client.GetAsync(media.ResourceUri, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             var totalBytes = response.Content.Headers.ContentLength ?? -1L;
             using var downloadStream = await response.Content.ReadAsStreamAsync();
@@ -166,7 +184,7 @@ namespace Downloader
             lblProgress.Invoke(new Action(() => {
                 lblProgress.Text = "Total: " + totalBytes;
                 lblSize.Text = (totalBytes / 1000000.0).ToString("0.##") + " MB";
-                lblDownloading.Text = media.Channels + " - " + grabResult.Title;
+                lblDownloading.Text = type + " - " + title;
             }));
 
             do
