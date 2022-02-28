@@ -69,6 +69,7 @@ namespace YouDownloader
                 btnDownload.IsEnabled = true;
                 txtLink.IsEnabled = true;
                 prgDownload.Value = 0;
+                lblProgress.Content = "Finished...  ";
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
@@ -87,7 +88,7 @@ namespace YouDownloader
 
         private void GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
         {
-            FFmpeg.AutoGen.ffmpeg.RootPath = @"C:\Users\erick\source\repos\Downloader\YouDownloader\ffmpeg";
+            MediaLibrary.Load(@"C:\Users\erick\source\repos\Downloader\YouDownloader\ffmpeg");
             var outputPath = new KnownFolder(KnownFolderType.Downloads).Path + "/YouDownloader";
             if (!Directory.Exists(outputPath))
             {

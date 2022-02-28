@@ -5,35 +5,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="YouDownloader" Height="450" Width="800">
-    <Grid>
-        <StackPanel Margin="32">
-            <StackPanel Orientation="Vertical">
-                <Label>Link</Label>
-                <TextBox x:Name="txtLink" ></TextBox>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label>Downloading:</Label>
-                <Label Name="lblDownloading"></Label>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label>Size:</Label>
-                <Label Name="lblSize"></Label>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label>Downloaded:</Label>
-                <Label Name="lblDownloaded"></Label>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label>Speed:</Label>
-                <Label Name="lblSpeed"></Label>
-            </StackPanel>
-            <StackPanel VerticalAlignment="Bottom" Margin="0,16,0,0">
-                <Label Name="lblProgress">Waiting...</Label>
-                <ProgressBar x:Name="prgDownload" Height="16" Margin="0,0,0,16"></ProgressBar>
-                <Button x:Name="btnDownload" Click="btnDownload_Click" HorizontalAlignment="Right" Padding="16,4">
-                    Download
-                </Button>
-            </StackPanel>
+    <DockPanel Margin="32">
+        <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+            <Label>Link</Label>
+            <TextBox x:Name="txtLink" ></TextBox>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Column="0" Grid.Row="0">Downloading:</Label>
+                <Label Grid.Column="1" Grid.Row="0" Name="lblDownloading"></Label>
+                <Label Grid.Column="0" Grid.Row="1">Size:</Label>
+                <Label Grid.Column="1" Grid.Row="1" Name="lblSize"></Label>
+                <Label Grid.Column="0" Grid.Row="2">Downloaded:</Label>
+                <Label Grid.Column="1" Grid.Row="2" Name="lblDownloaded"></Label>
+                <Label Grid.Column="0" Grid.Row="3">Speed:</Label>
+                <Label Grid.Column="1" Grid.Row="3" Name="lblSpeed"></Label>
+            </Grid>
         </StackPanel>
-    </Grid>
+        <StackPanel VerticalAlignment="Bottom" Margin="0,16,0,0" DockPanel.Dock="Bottom">
+            <Label Name="lblProgress">Waiting...</Label>
+            <ProgressBar x:Name="prgDownload" Height="16" Margin="0,0,0,16"></ProgressBar>
+            <Button x:Name="btnDownload" Click="btnDownload_Click" HorizontalAlignment="Right" Padding="16,4">
+                Download
+            </Button>
+        </StackPanel>
+    </DockPanel>
 </Window>
