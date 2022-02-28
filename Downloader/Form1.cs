@@ -28,13 +28,14 @@ namespace Downloader
 
         private void UseYoutubeExplode()
         {
+            btnDownload.Enabled = false;
+            txtLink.Enabled = false;
             Task.Run(async () =>
             {
                 try
                 {
                     var youtube = new YoutubeClient();
 
-                    // You can specify both video ID or URL
                     var videoInfo = await youtube.Videos.GetAsync(txtLink.Text);
                     var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
                     var videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
@@ -52,7 +53,12 @@ namespace Downloader
                 }
 
                 //var audioPath = DownloadMedia(streamAudio.Url, videoInfo.Title, "Audio");
-            });
+            }).ContinueWith(task =>
+            {
+                btnDownload.Enabled = true;
+                txtLink.Enabled = true;
+                prgDownload.Value = 0;
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private async Task<string> Download(YoutubeClient youtube, Video videoInfo, IStreamInfo stream)
@@ -63,7 +69,7 @@ namespace Downloader
                 lblSize.Text = stream.Size.ToString();
             });
             var path = Path.GetTempFileName();
-            using var progress = new InlineProgress(stream.Size, prgDownload, lblProgress, lblDownloaded);
+            using var progress = new InlineProgress(stream.Size, prgDownload, lblProgress, lblDownloaded, lblSpeed);
             await youtube.Videos.Streams.DownloadAsync(stream, path, progress);
             return path;
         }
