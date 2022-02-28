@@ -1,5 +1,7 @@
 ﻿using DotNetTools.SharpGrabber.Converter;
 
+using Syroot.Windows.IO;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,6 +37,8 @@ namespace YouDownloader
         private void btnDownload_Click(object sender, RoutedEventArgs e)
         {
             var link = txtLink.Text;
+            var audioPath = "";
+            var videoPath = "";
             btnDownload.IsEnabled = false;
             txtLink.IsEnabled = false;
             Task.Run(async () =>
@@ -47,16 +51,18 @@ namespace YouDownloader
                     var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
                     var videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
                     var audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-
-                    var audioPath = await Download(youtube, videoInfo, audioStream);
-                    var videoPath = await Download(youtube, videoInfo, videoStream);
+                    audioPath = await Download(youtube, videoInfo, audioStream);
+                    videoPath = await Download(youtube, videoInfo, videoStream);
                     GenerateOutputFile(videoInfo, audioPath, videoPath, videoStream);
-                    File.Delete(audioPath);
-                    File.Delete(videoPath);
                 }
                 catch (Exception ex)
                 {
                     var a = ex;
+                }
+                finally
+                {
+                    File.Delete(audioPath);
+                    File.Delete(videoPath);
                 }
             }).ContinueWith(task =>
             {
@@ -81,11 +87,15 @@ namespace YouDownloader
 
         private void GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
         {
-            FFmpeg.AutoGen.ffmpeg.RootPath = @"C:\Users\erick\source\repos\Downloader\Downloader\ffmpeg";
-            var outputPath = "D:\\Documents\\" + videoInfo.Title + "." + videoStream.Container.Name;
-            if (string.IsNullOrWhiteSpace(outputPath))
-                throw new Exception("No output path is specified.");
-            var merger = new MediaMerger(outputPath);
+            FFmpeg.AutoGen.ffmpeg.RootPath = @"C:\Users\erick\source\repos\Downloader\YouDownloader\ffmpeg";
+            var outputPath = new KnownFolder(KnownFolderType.Downloads).Path + "/YouDownloader";
+            if (!Directory.Exists(outputPath))
+            {
+                Directory.CreateDirectory(outputPath);
+            }
+
+            var filePath = outputPath + "/" + videoInfo.Title + "." + videoStream.Container.Name;
+            var merger = new MediaMerger(filePath);
             merger.AddStreamSource(audioPath, MediaStreamType.Audio);
             merger.AddStreamSource(videoPath, MediaStreamType.Video);
             merger.OutputMimeType = "video/" + videoStream.Container.Name;
