@@ -59,8 +59,6 @@
             this.txtLink.Name = "txtLink";
             this.txtLink.Size = new System.Drawing.Size(776, 23);
             this.txtLink.TabIndex = 1;
-            this.txtLink.Text = "https://www.youtube.com/watch?v=dlFA0Zq1k2A&list=RD090EKzrgBnk&index=13&ab_channe" +
-    "l=KANABOONVEVO";
             // 
             // prgDownload
             // 

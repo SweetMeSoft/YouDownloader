@@ -31,7 +31,8 @@ namespace Downloader
 
         public void Dispose()
         {
-            prgDownload.Invoke(() => {
+            prgDownload.Invoke(() =>
+            {
                 prgDownload.Value = 0;
             });
         }
@@ -45,7 +46,7 @@ namespace Downloader
                 prgDownload.Invoke(() =>
                 {
                     lblProgress.Text = "Descargado: " + percentage.ToString("0.##") + "%";
-                    lblDownloaded.Text = (size.MegaBytes * value).ToString("0.##") + " MB";
+                    lblDownloaded.Text = GetDownloadedSize(value);
                     prgDownload.Value = Convert.ToInt32(percentage);
 
                     var readed = (size.Bytes * value) - lastReaded;
@@ -63,6 +64,23 @@ namespace Downloader
                 stopwatch.Restart();
                 lastReaded = size.Bytes * value;
             }
+        }
+
+        private string GetDownloadedSize(double value)
+        {
+            var downloaded = size.KiloBytes * value;
+            if (downloaded < 1000)
+            {
+                return downloaded.ToString("0.##") + " KB";
+            }
+
+            downloaded = size.MegaBytes * value;
+            if (downloaded < 1000)
+            {
+                return downloaded.ToString("0.##") + " MB";
+            }
+
+            return (size.GigaBytes * value).ToString("0.##") + " GB";
         }
     }
 }
