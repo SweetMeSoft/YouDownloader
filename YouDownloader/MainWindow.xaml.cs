@@ -25,6 +25,7 @@ namespace YouDownloader
     public partial class MainWindow : Window
     {
         public ObservableCollection<VideoInfo> videoList = new();
+        private readonly YoutubeClient youtube = new();
 
         public MainWindow()
         {
@@ -37,7 +38,6 @@ namespace YouDownloader
         {
             var link = txtLink.Text;
             Video videoInfo = null;
-            var youtube = new YoutubeClient();
             IStreamInfo videoStream = null;
             IStreamInfo audioStream = null;
             Task.Run(async () =>
@@ -93,7 +93,7 @@ namespace YouDownloader
                         var audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
                         audioPath = await Download(youtube, videoInfo, audioStream);
                         videoPath = await Download(youtube, videoInfo, videoStream);
-                        GenerateOutputFile(videoInfo, audioPath, videoPath, videoStream);
+                        await GenerateOutputFile(videoInfo, audioPath, videoPath, videoStream);
                         itcVideos.Dispatcher.Invoke(() =>
                         {
                             videoList.Remove(videoList[i]);
@@ -132,16 +132,40 @@ namespace YouDownloader
             return path;
         }
 
-        private void GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
+        private async Task GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
         {
             MediaLibrary.Load(@"C:\Users\erick\source\repos\Downloader\YouDownloader\ffmpeg");
             var outputPath = new KnownFolder(KnownFolderType.Downloads).Path + "/YouDownloader";
+            var filePath = GetFilePath(outputPath, videoInfo, videoStream, 0);
             if (!Directory.Exists(outputPath))
             {
                 Directory.CreateDirectory(outputPath);
             }
 
-            var filePath = GetFilePath(outputPath, videoInfo, videoStream, 0);
+            var trackManifest = await youtube.Videos.ClosedCaptions.GetManifestAsync(videoInfo.Id);
+            var trackInfo = trackManifest.GetByLanguage("es");
+            await youtube.Videos.ClosedCaptions.DownloadAsync(trackInfo, filePath + ".srt");
+            var track = await youtube.Videos.ClosedCaptions.GetAsync(trackInfo);
+            var subtitles = "";
+            //var lines = new List<string>();
+            foreach (var caption in track.Captions)
+            {
+                if (!caption.Text.Contains("["))
+                {
+                    subtitles += caption.Text + " ";
+                }
+                //if (caption.Text.EndsWith("."))
+                //{
+                //    var copy = subtitles;
+                //    lines.Add(copy);
+                //    subtitles = "";
+                //}
+            }
+
+            await File.WriteAllTextAsync(filePath + ".txt", subtitles);
+
+            //var text = caption.Text;
+
             var merger = new MediaMerger(filePath);
             merger.AddStreamSource(audioPath, MediaStreamType.Audio);
             merger.AddStreamSource(videoPath, MediaStreamType.Video);
