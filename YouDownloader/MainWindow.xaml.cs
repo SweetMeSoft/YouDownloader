@@ -164,7 +164,7 @@ namespace YouDownloader
 
         private async Task GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
         {
-            MediaLibrary.Load(@"C:\Users\erick\source\repos\Downloader\YouDownloader\ffmpeg");
+            MediaLibrary.Load("ffmpeg/");
             var outputPath = new KnownFolder(KnownFolderType.Downloads).Path + "/YouDownloader";
             var filePath = GetFilePath(outputPath, videoInfo, videoStream, 0);
             if (!Directory.Exists(outputPath))

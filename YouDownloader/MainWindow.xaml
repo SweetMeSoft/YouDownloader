@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
-        Title="YouDownloader" Height="450" Width="800">
+        Title="YouDownloader" Height="600" Width="800">
     <DockPanel Margin="32">
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="0,0,0,32">
             <Label>Link</Label>
