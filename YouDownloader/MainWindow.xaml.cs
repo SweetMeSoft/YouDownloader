@@ -146,27 +146,34 @@ namespace YouDownloader
         {
             var outputPath = new KnownFolder(KnownFolderType.Downloads).Path + "/YouDownloader";
             var filePath = GetFilePath(outputPath, videoInfo, videoStream, 0);
-            var trackManifest = await youtube.Videos.ClosedCaptions.GetManifestAsync(videoInfo.Id);
-            var trackInfo = trackManifest.GetByLanguage("es");
-            await youtube.Videos.ClosedCaptions.DownloadAsync(trackInfo, filePath + ".srt");
-            var track = await youtube.Videos.ClosedCaptions.GetAsync(trackInfo);
-            var subtitles = "";
-            foreach (var caption in track.Captions)
+            try
             {
-                if (!caption.Text.Contains("["))
+                var trackManifest = await youtube.Videos.ClosedCaptions.GetManifestAsync(videoInfo.Id);
+                var trackInfo = trackManifest.GetByLanguage("es");
+                await youtube.Videos.ClosedCaptions.DownloadAsync(trackInfo, filePath + ".srt");
+                var track = await youtube.Videos.ClosedCaptions.GetAsync(trackInfo);
+                var subtitles = "";
+                foreach (var caption in track.Captions)
                 {
-                    subtitles += caption.Text + " ";
+                    if (!caption.Text.Contains('['))
+                    {
+                        subtitles += caption.Text + " ";
+                    }
                 }
-            }
 
-            await File.WriteAllTextAsync(filePath + ".txt", subtitles);
+                await File.WriteAllTextAsync(filePath + ".txt", subtitles.Replace("\n", " "));
+            }
+            catch (Exception e)
+            {
+                await File.WriteAllTextAsync(filePath + ".txt", e.Message);
+            }
         }
 
         private async Task GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
         {
             MediaLibrary.Load("ffmpeg/");
             var outputPath = new KnownFolder(KnownFolderType.Downloads).Path + "/YouDownloader";
-            var filePath = GetFilePath(outputPath, videoInfo, videoStream, 0);
+            var filePath = GetFilePath(outputPath, videoInfo, videoStream, 0) + videoStream.Container.Name;
             if (!Directory.Exists(outputPath))
             {
                 Directory.CreateDirectory(outputPath);
@@ -183,14 +190,15 @@ namespace YouDownloader
         private string GetFilePath(string outputPath, Video videoInfo, IStreamInfo videoStream, int position)
         {
             string? path;
-            var title = Regex.Replace(videoInfo.Title, @"[^0-9a-zA-Z\._\- ]", "");
+            //var title = Regex.Replace(videoInfo.Title, @"[^0-9a-zA-Z\._\- ]", "");
+            var title = videoInfo.Title;
             if (position > 0)
             {
-                path = outputPath + "/" + title + "[" + videoInfo.UploadDate.ToString("yyyy-MM-dd") + "] (" + position + ")." + videoStream.Container.Name;
+                path = outputPath + "/[" + videoInfo.UploadDate.ToString("yyyy-MM-dd") + "] " + title + " (" + position + ")";
             }
             else
             {
-                path = outputPath + "/" + title + "[" + videoInfo.UploadDate.ToString("yyyy-MM-dd") + "]." + videoStream.Container.Name;
+                path = outputPath + "/[" + videoInfo.UploadDate.ToString("yyyy-MM-dd") + "] " + title;
             }
 
             if (File.Exists(path))
