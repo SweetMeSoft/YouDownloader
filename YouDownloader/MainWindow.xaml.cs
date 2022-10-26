@@ -5,12 +5,15 @@ using Syroot.Windows.IO;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
 using YouDownloader.Models;
 
 using YoutubeExplode;
+using YoutubeExplode.Channels;
+using YoutubeExplode.Common;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
@@ -31,40 +34,83 @@ namespace YouDownloader
             itcVideos.ItemsSource = videoList;
         }
 
-        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        private async void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            var link = txtLink.Text;
-            Video videoInfo = null;
-            IStreamInfo videoStream = null;
-            IStreamInfo audioStream = null;
             btnAdd.IsEnabled = false;
-            Task.Run(async () =>
-            {
-                videoInfo = await youtube.Videos.GetAsync(link);
-                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
-                videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
-                audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-            }).ContinueWith(task =>
-            {
-                if (videoInfo != null)
-                {
-                    videoList.Add(new VideoInfo()
-                    {
-                        Title = videoInfo.Title,
-                        Description = videoInfo.Description,
-                        Size = GetSize(audioStream, videoStream),
-                        Date = videoInfo.UploadDate.ToString("yyyy-MM-dd"),
-                        UrlThumbnail = videoInfo.Thumbnails[0].Url.Substring(0, videoInfo.Thumbnails[0].Url.IndexOf("?")),
-                        Video = videoInfo
-                    });
-                }
-                //itcVideos.ItemsSource = videoList;
-                txtLink.Text = "";
-                btnAdd.IsEnabled = true;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+            txtLink.IsEnabled = false;
+            await Add();
+            txtLink.Text = "";
+            txtLink.IsEnabled = true;
+            btnAdd.IsEnabled = true;
         }
 
-        private void btnDownload_Click(object sender, RoutedEventArgs e)
+        private async Task Add()
+        {
+            if (txtLink.Text.ToLower().Contains("channel"))
+            {
+                var channel = await youtube.Channels.GetAsync(txtLink.Text);
+                await AddChannelToList(channel);
+            }
+            else
+            {
+                if (txtLink.Text.ToLower().Contains("/c/"))
+                {
+                    var channel = await youtube.Channels.GetBySlugAsync(txtLink.Text);
+                    await AddChannelToList(channel);
+                }
+                else
+                {
+                    if (txtLink.Text.ToLower().Contains("playlist"))
+                    {
+                        await foreach (var video in youtube.Playlists.GetVideosAsync(txtLink.Text))
+                        {
+                            await AddItemToList(video.Url);
+                        }
+                    }
+                    else
+                    {
+                        await AddItemToList(txtLink.Text);
+                    }
+                }
+            }
+        }
+
+        private async Task AddChannelToList(Channel channel)
+        {
+            var uploads = youtube.Channels.GetUploadsAsync(channel.Id);
+            var videos = await uploads.ToListAsync();
+            foreach (var video in videos)
+            {
+                await AddItemToList(video.Url);
+            }
+        }
+
+        private async Task AddItemToList(string link)
+        {
+            var videoInfo = await youtube.Videos.GetAsync(link);
+            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
+            var videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
+            var audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+            if (videoInfo != null && audioStream != null && videoStream != null)
+            {
+                videoList.Add(new VideoInfo()
+                {
+                    Title = videoInfo.Title,
+                    Description = videoInfo.Description,
+                    Size = GetSize(audioStream, videoStream),
+                    Date = videoInfo.UploadDate.ToString("yyyy-MM-dd"),
+                    UrlThumbnail = videoInfo.Thumbnails[0].Url.Substring(0, videoInfo.Thumbnails[0].Url.IndexOf("?")),
+                    Video = videoInfo
+                });
+            }
+            else
+            {
+                Console.WriteLine("Ups");
+            }
+        }
+
+        private async void btnDownload_Click(object sender, RoutedEventArgs e)
         {
             IStreamInfo audioStream;
             IStreamInfo videoStream = null;
@@ -82,99 +128,97 @@ namespace YouDownloader
             chkMergeAudioVideo.IsEnabled = false;
             chkDownloadSubtitles.IsEnabled = false;
             chkDownloadSummary.IsEnabled = false;
-            Task.Run(async () =>
+
+            for (var i = 0; i < videoList.Count; i++)
             {
-                for (var i = 0; i < videoList.Count; i++)
+                try
                 {
-                    try
-                    {
-                        var youtube = new YoutubeClient();
-                        var videoInfo = await youtube.Videos.GetAsync(videoList[i].Video.Id);
-                        var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
-                        audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-                        videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
+                    var youtube = new YoutubeClient();
+                    var videoInfo = await youtube.Videos.GetAsync(videoList[i].Video.Id);
+                    var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
+                    audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                    videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
 
+                    if (downloadAudio)
+                    {
+                        audioPath = await DownloadStream(youtube, videoInfo, audioStream);
+                    }
+
+                    if (downloadVideo)
+                    {
+                        videoPath = await DownloadStream(youtube, videoInfo, videoStream);
+                    }
+
+                    if (mergeAudioVideo)
+                    {
+                        GenerateOutputFile(videoInfo, audioPath, videoPath, videoStream);
+                    }
+                    else
+                    {
                         if (downloadAudio)
                         {
-                            audioPath = await DownloadStream(youtube, videoInfo, audioStream);
+                            CopyFile(videoInfo, audioStream, audioPath);
                         }
 
                         if (downloadVideo)
                         {
-                            videoPath = await DownloadStream(youtube, videoInfo, videoStream);
+                            CopyFile(videoInfo, videoStream, videoPath);
                         }
-
-                        if (mergeAudioVideo)
-                        {
-                            await GenerateOutputFile(videoInfo, audioPath, videoPath, videoStream);
-                        }
-                        else
-                        {
-                            if (downloadAudio)
-                            {
-                                CopyFile(videoInfo, audioStream, audioPath);
-                            }
-
-                            if (downloadVideo)
-                            {
-                                CopyFile(videoInfo, videoStream, videoPath);
-                            }
-                        }
-
-                        if (downloadSubtitles)
-                        {
-                            DownloadSubtitles(videoInfo);
-                        }
-
-                        if (downloadSummary)
-                        {
-                            DownloadSummaryText(videoInfo, videoStream);
-                        }
-
-                        itcVideos.Dispatcher.Invoke(() =>
-                        {
-                            videoList.Remove(videoList[i]);
-                            i--;
-                        });
                     }
-                    catch (Exception ex)
-                    {
-                        var a = ex;
-                    }
-                    finally
-                    {
-                        if (downloadAudio)
-                        {
-                            File.Delete(audioPath);
-                        }
 
-                        if (downloadVideo)
-                        {
-                            File.Delete(videoPath);
-                        }
+                    if (downloadSubtitles)
+                    {
+                        DownloadSubtitles(videoInfo);
+                    }
+
+                    if (downloadSummary)
+                    {
+                        DownloadSummaryText(videoInfo, videoStream);
+                    }
+
+                    itcVideos.Dispatcher.Invoke(() =>
+                    {
+                        videoList.Remove(videoList[i]);
+                        i--;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    var a = ex;
+                }
+                finally
+                {
+                    if (downloadAudio)
+                    {
+                        File.Delete(audioPath);
+                    }
+
+                    if (downloadVideo)
+                    {
+                        File.Delete(videoPath);
                     }
                 }
-            }).ContinueWith(task =>
-            {
-                btnDownload.IsEnabled = true;
-                txtLink.IsEnabled = true;
-                chkDownloadAudio.IsEnabled = true;
-                chkDownloadVideo.IsEnabled = true;
-                chkMergeAudioVideo.IsEnabled = true;
-                chkDownloadSubtitles.IsEnabled = true;
-                chkDownloadSummary.IsEnabled = true;
-                prgDownload.Value = 0;
-                lblProgress.Content = "Finished...  ";
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+            }
+
+            btnDownload.IsEnabled = true;
+            txtLink.IsEnabled = true;
+            chkDownloadAudio.IsEnabled = true;
+            chkDownloadVideo.IsEnabled = true;
+            chkMergeAudioVideo.IsEnabled = true;
+            chkDownloadSubtitles.IsEnabled = true;
+            chkDownloadSummary.IsEnabled = true;
+            prgDownload.Value = 0;
+            lblProgress.Content = "Finished...  ";
+            lblDownloading.Content = "";
+            lblSize.Content = "";
+            lblDownloaded.Content = "";
+            lblSpeed.Content = "";
         }
 
         private async Task<string> DownloadStream(YoutubeClient youtube, Video videoInfo, IStreamInfo stream)
         {
-            lblDownloading.Dispatcher.Invoke(() =>
-            {
-                lblDownloading.Content = stream.Container.Name + " - " + videoInfo.Title;
-                lblSize.Content = stream.Size.ToString();
-            });
+            lblDownloading.Content = stream.Container.Name + " - " + videoInfo.Title;
+            lblSize.Content = stream.Size.ToString();
 
             var path = Path.GetTempFileName();
             using var progress = new InlineProgress(stream.Size, prgDownload, lblProgress, lblDownloaded, lblSpeed);
@@ -224,8 +268,10 @@ namespace YouDownloader
             }
         }
 
-        private async Task GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
+        private void GenerateOutputFile(Video videoInfo, string audioPath, string videoPath, IStreamInfo videoStream)
         {
+            prgDownload.IsIndeterminate = true;
+            lblProgress.Content = "Generando archivo final...";
             MediaLibrary.Load("ffmpeg/");
             var outputPath = new KnownFolder(KnownFolderType.Downloads).Path + "/YouDownloader";
             var filePath = GetFilePath(outputPath, videoInfo, 0) + "." + videoStream.Container.Name;
@@ -240,6 +286,8 @@ namespace YouDownloader
             merger.OutputMimeType = "video/" + videoStream.Container.Name;
             merger.OutputShortName = videoStream.Container.Name;
             merger.Build();
+            prgDownload.IsIndeterminate = false;
+            prgDownload.Value = 0;
         }
 
         private string GetFilePath(string outputPath, Video videoInfo, int position)

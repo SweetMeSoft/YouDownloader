@@ -28,36 +28,31 @@ namespace YouDownloader
 
         public void Dispose()
         {
-            prgDownload.Dispatcher.Invoke(() =>
-            {
-                prgDownload.Value = 0;
-            });
+            prgDownload.Value = 0;
         }
 
         public void Report(double value)
         {
             if (stopwatch.ElapsedMilliseconds > 200)
             {
-                var percentage = value * 100;
+                var percentage = value * 100.0;
 
-                prgDownload.Dispatcher.Invoke(() =>
+                lblProgress.Content = "Descargado: " + percentage.ToString("0.##") + "%";
+                lblDownloaded.Content = GetDownloadedSize(value);
+                prgDownload.Value = Convert.ToInt32(percentage);
+
+                var readed = (size.Bytes * value) - lastReaded;
+                var speed = ((readed * 1000.0) / stopwatch.ElapsedMilliseconds) / 1000.0;
+                if (speed > 1000)
                 {
-                    lblProgress.Content = "Descargado: " + percentage.ToString("0.##") + "%";
-                    lblDownloaded.Content = GetDownloadedSize(value);
-                    prgDownload.Value = Convert.ToInt32(percentage);
+                    speed /= 1000;
+                    lblSpeed.Content = speed.ToString("0.##") + " MB/sec";
+                }
+                else
+                {
+                    lblSpeed.Content = speed.ToString("0.##") + " KB/sec";
+                }
 
-                    var readed = (size.Bytes * value) - lastReaded;
-                    var speed = ((readed * 1000.0) / stopwatch.ElapsedMilliseconds) / 1000.0;
-                    if (speed > 1000)
-                    {
-                        speed /= 1000;
-                        lblSpeed.Content = speed.ToString("0.##") + " MB/sec";
-                    }
-                    else
-                    {
-                        lblSpeed.Content = speed.ToString("0.##") + " KB/sec";
-                    }
-                });
                 stopwatch.Restart();
                 lastReaded = size.Bytes * value;
             }

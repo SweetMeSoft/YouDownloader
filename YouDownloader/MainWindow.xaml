@@ -6,8 +6,7 @@
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
         Title="YouDownloader"
-        Height="600"
-        Width="800">
+        WindowState="Maximized">
     <DockPanel Margin="32">
         <StackPanel Orientation="Vertical"
                     DockPanel.Dock="Top"
