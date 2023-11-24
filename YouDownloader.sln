@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouDownloader", "YouDownloader\YouDownloader.csproj", "{73B354F7-CED8-478B-A698-EAFD02301E42}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "YouDownloader", "YouDownloader.Setup\YouDownloader.Setup.vdproj", "{02FAB948-57E8-419B-923D-DE694E9C47D5}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "YouDownloader.Setup", "YouDownloader.Setup\YouDownloader.Setup.vdproj", "{02FAB948-57E8-419B-923D-DE694E9C47D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

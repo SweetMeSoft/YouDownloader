@@ -87,26 +87,32 @@ namespace YouDownloader
 
         private async Task AddItemToList(string link)
         {
-            var videoInfo = await youtube.Videos.GetAsync(link);
-            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
-            var videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
-            var audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+            try
+            {
+                var videoInfo = await youtube.Videos.GetAsync(link);
+                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoInfo.Id);
+                var videoStream = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
+                var audioStream = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-            if (videoInfo != null && audioStream != null && videoStream != null)
-            {
-                videoList.Add(new VideoInfo()
+                if (videoInfo != null && audioStream != null && videoStream != null)
                 {
-                    Title = videoInfo.Title,
-                    Description = videoInfo.Description,
-                    Size = GetSize(audioStream, videoStream),
-                    Date = videoInfo.UploadDate.ToString("yyyy-MM-dd"),
-                    UrlThumbnail = videoInfo.Thumbnails[0].Url.Substring(0, videoInfo.Thumbnails[0].Url.IndexOf("?")),
-                    Video = videoInfo
-                });
-            }
-            else
+                    videoList.Add(new VideoInfo()
+                    {
+                        Title = videoInfo.Title,
+                        Description = videoInfo.Description,
+                        Size = GetSize(audioStream, videoStream),
+                        Date = videoInfo.UploadDate.ToString("yyyy-MM-dd"),
+                        UrlThumbnail = videoInfo.Thumbnails[0].Url.Substring(0, videoInfo.Thumbnails[0].Url.IndexOf("?")),
+                        Video = videoInfo
+                    });
+                }
+                else
+                {
+                    Console.WriteLine("Ups");
+                }
+            }catch(Exception e)
             {
-                Console.WriteLine("Ups");
+                Console.WriteLine(e);
             }
         }
 
