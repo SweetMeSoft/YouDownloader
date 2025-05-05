@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -13,14 +13,48 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpGrabber.Converter" Version="1.0.0" />
+    <PackageReference Include="SharpGrabber.Converter" Version="1.1.0" />
     <PackageReference Include="Syroot.Windows.IO.KnownFolders" Version="1.3.0" />
     <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
-    <PackageReference Include="YoutubeExplode" Version="6.3.6" />
-    <PackageReference Include="YoutubeExplode.Converter" Version="6.3.6" />
+    <PackageReference Include="System.Text.Json" Version="9.0.4" />
+    <PackageReference Include="YoutubeExplode" Version="6.5.4" />
+    <PackageReference Include="YoutubeExplode.Converter" Version="6.5.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="ffmpeg61\avcodec-60.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\avdevice-60.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\avfilter-9.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\avformat-60.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\avutil-58.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\ffmpeg.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\ffplay.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\ffprobe.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\postproc-57.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\swresample-4.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ffmpeg61\swscale-7.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="ffmpeg\avcodec-58.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
