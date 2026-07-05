@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Windows.Controls;
 
@@ -28,7 +28,10 @@ namespace YouDownloader
 
         public void Dispose()
         {
-            prgDownload.Value = 0;
+            prgDownload.Dispatcher.BeginInvoke(() =>
+            {
+                prgDownload.Value = 0;
+            });
         }
 
         public void Report(double value)
@@ -36,25 +39,30 @@ namespace YouDownloader
             if (stopwatch.ElapsedMilliseconds > 200)
             {
                 var percentage = value * 100.0;
-
-                lblProgress.Content = "Descargado: " + percentage.ToString("0.##") + "%";
-                lblDownloaded.Content = GetDownloadedSize(value);
-                prgDownload.Value = Convert.ToInt32(percentage);
-
+                var downloadedSize = GetDownloadedSize(value);
                 var readed = (size.Bytes * value) - lastReaded;
-                var speed = ((readed * 1000.0) / stopwatch.ElapsedMilliseconds) / 1000.0;
-                if (speed > 1000)
-                {
-                    speed /= 1000;
-                    lblSpeed.Content = speed.ToString("0.##") + " MB/sec";
-                }
-                else
-                {
-                    lblSpeed.Content = speed.ToString("0.##") + " KB/sec";
-                }
+                var elapsedMs = stopwatch.ElapsedMilliseconds;
 
                 stopwatch.Restart();
                 lastReaded = size.Bytes * value;
+
+                prgDownload.Dispatcher.BeginInvoke(() =>
+                {
+                    lblProgress.Content = "Descargado: " + percentage.ToString("0.##") + "%";
+                    lblDownloaded.Content = downloadedSize;
+                    prgDownload.Value = Convert.ToInt32(percentage);
+
+                    var speed = ((readed * 1000.0) / elapsedMs) / 1000.0;
+                    if (speed > 1000)
+                    {
+                        speed /= 1000;
+                        lblSpeed.Content = speed.ToString("0.##") + " MB/sec";
+                    }
+                    else
+                    {
+                        lblSpeed.Content = speed.ToString("0.##") + " KB/sec";
+                    }
+                });
             }
         }
 
